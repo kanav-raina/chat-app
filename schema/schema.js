@@ -1,4 +1,4 @@
-const {gql} = require('apollo-server')
+const {gql} = require('apollo-server-express')
 
 
 const typeDefs =gql`
@@ -8,9 +8,15 @@ const typeDefs =gql`
         id:ID
         message:String
         createdAt:Date
+        from:ID
+        to:ID
 
     }
     
+    type Subscription{
+        messageAdded:Message
+    }
+
     type Query{
         getMessageById(id:ID!):Message
         getAllMessages:[Message]

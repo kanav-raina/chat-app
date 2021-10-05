@@ -42,7 +42,7 @@ const { GraphQLScalarType, Kind } = require('graphql');
 
   const subscriptionServer = SubscriptionServer.create(
     { schema, execute, subscribe },
-    { server: httpServer, path: server.graphqlPath }
+    { server: httpServer}//, path: server.graphqlPath }
   );
 
   const server = new ApolloServer({
