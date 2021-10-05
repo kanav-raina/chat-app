@@ -1,6 +1,10 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const cuid=require('cuid')
+const {PubSub} =require('graphql-subscriptions')
+
+const pubSub = new PubSub()
+
 
 const createMessage=async(_,args,__,___)=>{
       let message_data={
@@ -12,6 +16,13 @@ const createMessage=async(_,args,__,___)=>{
       }
       try{
         var message= await prisma.messages.create({ data: message_data })
+        var message_db = await prisma.messages.findUnique({
+                where: {
+                  id: message_data.id
+                },
+              })
+        pubSub.publish('MESSAGE_ADDED',{messageAdded:message_db})// MESSAGE_ADDED from  subscribe:()=> pubSub.asyncIterator('MESSAGE_ADDED') , both must be same
+        console.log('message added')          //messageAdded from schema
       }catch(e){
           console.log(e)
       }

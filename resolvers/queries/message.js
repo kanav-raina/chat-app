@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 const getMessageById=async(_,args)=>{
     console.log(args.id)
         try{
-            var note = await prisma.messages.findUnique({
+            var message = await prisma.messages.findUnique({
                 where: {
                   id: args.id
                 },
@@ -14,16 +14,16 @@ const getMessageById=async(_,args)=>{
         }catch(e){
             console.log(e)
         }
-      return note
+      return message
     }
 
 const getAllMessages=async(_,args,ctx)=>{//later make it only for userid
     try{
-      var notes = await prisma.messages.findMany()
+      var messages = await prisma.messages.findMany()
     }catch(e){
       console.log(e)
     }
-    return notes
+    return messages
 }    
 
 module.exports = {getMessageById,getAllMessages}

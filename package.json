@@ -23,6 +23,7 @@
     "cuid": "^2.1.8",
     "express": "^4.17.1",
     "graphql": "^15.6.0",
+    "graphql-subscriptions": "^1.2.1",
     "subscriptions-transport-ws": "^0.9.19"
   },
   "devDependencies": {

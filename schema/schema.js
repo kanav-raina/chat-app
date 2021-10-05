@@ -13,9 +13,7 @@ const typeDefs =gql`
 
     }
     
-    type Subscription{
-        messageAdded:Message
-    }
+    
 
     type Query{
         getMessageById(id:ID!):Message
@@ -27,6 +25,9 @@ const typeDefs =gql`
         updateMessage(id:ID!,message:String!):Message
         deleteMessage(id:ID!):Message
 
+    }
+    type Subscription{
+        messageAdded:Message
     }
 `
 
