@@ -5,10 +5,11 @@ const { makeExecutableSchema } =require("@graphql-tools/schema") ;
 const express =require("express") ;
 const { ApolloServer } =require("apollo-server-express") ;
 const { query } = require('./resolvers/queries/query');
+const {subscription} = require('./resolvers/subscriptions/subscription')
 const { mutation } = require('./resolvers/mutations/mutation')
-const { subscription } = require('./resolvers/subscriptions/subscription')
 const typeDefs = require('./schema/schema.js')
 const { GraphQLScalarType, Kind } = require('graphql');
+
 
 (async function () {
   const app = express();
@@ -34,36 +35,33 @@ const { GraphQLScalarType, Kind } = require('graphql');
   const resolvers = {
     Query: query,
     Mutation:mutation,
-    Subscription:subscription,
-    Date: dateScalar 
+    Date: dateScalar,
+    Subscription:subscription
   };  
   const schema = makeExecutableSchema({
     typeDefs,
     resolvers,
   });
 
- 
-   const subscriptionServer = SubscriptionServer.create(
-    { schema, execute, subscribe },
-    { server: httpServer, path: `/graphql`}
-  );
 
-  const server = new ApolloServer({
+
+  server = new ApolloServer({
     schema,
-    playground: {
-        subscriptionEndpoint: 'ws://localhost:4000/graphql'
-    },
-    subscriptions: {
-        keepAlive: 9000,
-        onConnect: (connParams, webSocket, context) => {
-            console.log('CLIENT CONNECTED');
-        },
-        onDisconnect: (webSocket, context) => {
-            console.log('CLIENT DISCONNECTED')
-        }
-    }
+    plugins: [{
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            subscriptionServer.close();
+          }
+        };
+      }
+    }],
   });
 
+  const subscriptionServer = SubscriptionServer.create(
+    { schema, execute, subscribe },
+    { server: httpServer, path: server.graphqlPath }
+  );
 
   await server.start();
   server.applyMiddleware({ app });
