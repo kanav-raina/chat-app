@@ -1,73 +1,53 @@
-const { createServer } =require("http") ;
-const { execute, subscribe } =require("graphql") ;
-const { SubscriptionServer } =require("subscriptions-transport-ws") ;
-const { makeExecutableSchema } =require("@graphql-tools/schema") ;
-const express =require("express") ;
-const { ApolloServer } =require("apollo-server-express") ;
+const http = require('http');
+const { ApolloServer } = require('apollo-server-express');
+const { ApolloServerPluginDrainHttpServer } = require('apollo-server-core');
+const { execute, subscribe } = require('graphql');
+const { makeExecutableSchema } = require('@graphql-tools/schema');
+const { SubscriptionServer } = require('subscriptions-transport-ws');
+const express = require('express');
 const { query } = require('./resolvers/queries/query');
 const {subscription} = require('./resolvers/subscriptions/subscription')
 const { mutation } = require('./resolvers/mutations/mutation')
+
+const port = 9000;
+
+const app = express();
+
+
 const typeDefs = require('./schema/schema.js')
-const { GraphQLScalarType, Kind } = require('graphql');
-
-
-(async function () {
-  const app = express();
-  
-
-    const dateScalar = new GraphQLScalarType({
-        name: 'Date',
-        description: 'Date custom scalar type',
-        serialize(value) {
-            return value.toISOString(); 
-        },
-        parseValue(value) {
-            return new Date(value); 
-        },
-        parseLiteral(ast) {
-            if (ast.kind === Kind.INT) {
-            return new Date(parseInt(ast.value, 10)); // Convert hard-coded AST string to integer and then to Date
-            }
-            return null; // Invalid hard-coded value (not an integer)
-        },
-    });  
-  const httpServer = createServer(app);
-  const resolvers = {
+const resolvers = {
     Query: query,
     Mutation:mutation,
-    Date: dateScalar,
     Subscription:subscription
-  };  
-  const schema = makeExecutableSchema({
-    typeDefs,
-    resolvers,
+  }
+const schema = makeExecutableSchema({ typeDefs, resolvers });
+
+async function start() {
+  const httpServer = http.createServer(app);
+  const subscriptionServer = SubscriptionServer.create({
+    schema, execute, subscribe
+  }, {
+    server: httpServer, path: '/graphql'
   });
 
-
-
-  server = new ApolloServer({
+  const httpServerPlugin = ApolloServerPluginDrainHttpServer({ httpServer });
+  const subscriptionServerPlugin = {
+    async serverWillStart() {
+      return {
+        async drainServer() {
+          subscriptionServer.close();
+        }
+      };
+    }
+  };
+  const apolloServer = new ApolloServer({
     schema,
-    plugins: [{
-      async serverWillStart() {
-        return {
-          async drainServer() {
-            subscriptionServer.close();
-          }
-        };
-      }
-    }],
+    plugins: [httpServerPlugin, subscriptionServerPlugin]
   });
+  await apolloServer.start();
+  apolloServer.applyMiddleware({ app, path: '/graphql' });
 
-  const subscriptionServer = SubscriptionServer.create(
-    { schema, execute, subscribe },
-    { server: httpServer, path: server.graphqlPath }
-  );
+  httpServer.listen(port, () => console.log(`Server started on port ${port}`));
+}
 
-  await server.start();
-  server.applyMiddleware({ app });
-
-  const PORT = 4000;
-  httpServer.listen(PORT, () =>
-    console.log(`Server is now running on http://localhost:${PORT}/graphql`)
-  );
-})();
+start();
