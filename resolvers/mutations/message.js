@@ -1,9 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const cuid=require('cuid')
-const {PubSub} =require('graphql-subscriptions')
 
-const pubSub = new PubSub()
+const {pubSub} = require('../subscriptions/subscription')
+
 
 
 const createMessage=async(_,args,__,___)=>{

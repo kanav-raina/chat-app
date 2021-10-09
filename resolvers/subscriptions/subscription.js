@@ -8,4 +8,4 @@ const subscription={
     }
 }
 
-module.exports={subscription}
+module.exports={subscription,pubSub}

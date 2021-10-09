@@ -9,7 +9,7 @@ const { query } = require('./resolvers/queries/query');
 const {subscription} = require('./resolvers/subscriptions/subscription')
 const { mutation } = require('./resolvers/mutations/mutation')
 
-const port = 9000;
+const port = 4444;
 
 const app = express();
 
