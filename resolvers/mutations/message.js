@@ -12,21 +12,22 @@ const createMessage=async(_,args,__,___)=>{
         from:cuid(),//args.user_id,
         to:cuid(),//args.to_user_id,
         message:args.message,
-        //createdAt:new Date()
+        createdAt:new Date()
       }
       try{
-        var message= await prisma.messages.create({ data: message_data })
+        /*var message= await prisma.messages.create({ data: message_data })
         var message_db = await prisma.messages.findUnique({
                 where: {
                   id: message_data.id
                 },
-              })
-        pubSub.publish("MESSAGE_ADDED", {messageAdded: message_db });// MESSAGE_ADDED from  subscribe:()=> pubSub.asyncIterator('MESSAGE_ADDED') , both must be same
+              })*/
+
+        pubSub.publish("MESSAGE_ADDED", {messageAdded:  message_data });// MESSAGE_ADDED from  subscribe:()=> pubSub.asyncIterator('MESSAGE_ADDED') , both must be same
         console.log('message added')          //messageAdded from schema
       }catch(e){
           console.log(e)
       }
-      return message_db 
+      return  message_data
   }
 
 const updateMessage =async(_,args,__,___)=>{
